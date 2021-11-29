@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='js/chart.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='js/chart-extras.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="my-0 font-weight-normal">{{ start }}</h4>
+                <h4 class="my-0 font-weight-normal">{{ stop }}</h4>
+            </div>
+        </div>
+        <canvas id="myChart" width="1200" height="400"></canvas>
+    </div>
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {},
+            options: OPTIONS
+        });
+        updateChart(myChart, '{{ start }}', '{{ stop }}')
+    </script>
+{% endblock %}

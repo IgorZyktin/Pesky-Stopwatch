@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="container">
+        <div class="py-5 text-center">
+            <h2>Pesky Stopwatch</h2>
+            <p class="lead">Посмотреть на расход времени, задуматься</p>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-column">
+            <a href="{{ url_for('one_month') }}"
+               type="button"
+               class="btn btn-primary my-button">За последний месяц
+            </a>
+            <br>
+            <a href="{{ url_for('six_months') }}"
+               type="button"
+               class="btn btn-primary my-button"> За последние 6 месяцев
+            </a>
+            <br>
+            <a href="{{ url_for('twelve_months') }}"
+               type="button"
+               class="btn btn-primary my-button">За последний год
+            </a>
+            <br>
+            <a href="{{ url_for('upload') }}"
+               type="button"
+               class="btn btn-dark my-button">Загрузить новые данные
+            </a>
+        </div>
+    </div>
+{% endblock %}
