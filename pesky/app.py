@@ -14,28 +14,13 @@ database.metadata.create_all()
 @app.route('/')
 def index():
     """Стартовая страница."""
-    context = {}
-    return flask.render_template('index.html', **context)
+    return flask.render_template('index.html')
 
 
-@app.route('/one_month')
-def one_month():
-    """Лог за 1 месяц."""
-    start, stop = logic.get_start_and_stop(months=1)
-    return flask.redirect(flask.url_for('chart', start=start, stop=stop))
-
-
-@app.route('/six_months')
-def six_months():
-    """Лог за 6 месяцев."""
-    start, stop = logic.get_start_and_stop(months=6)
-    return flask.redirect(flask.url_for('chart', start=start, stop=stop))
-
-
-@app.route('/twelve_months')
-def twelve_months():
-    """Лог за 12 месяцев."""
-    start, stop = logic.get_start_and_stop(months=12)
+@app.route('/log/<int:months>')
+def log(months: int):
+    """Лог за X месяцев."""
+    start, stop = logic.get_start_and_stop(months=months)
     return flask.redirect(flask.url_for('chart', start=start, stop=stop))
 
 

@@ -1,0 +1,23 @@
+{% macro menu(vertical) %}
+    <div class="d-flex justify-content-around align-items-center {{ 'flex-column' if vertical else '' }}">
+        <a href="{{ url_for('log', months=1) }}"
+           type="button"
+           class="btn btn-primary my-button">За последний месяц
+        </a>
+        <br>
+        <a href="{{ url_for('log', months=6) }}"
+           type="button"
+           class="btn btn-primary my-button"> За последние 6 месяцев
+        </a>
+        <br>
+        <a href="{{ url_for('log', months=12) }}"
+           type="button"
+           class="btn btn-primary my-button">За последний год
+        </a>
+        <br>
+        <a href="{{ url_for('upload') }}"
+           type="button"
+           class="btn btn-dark my-button">Загрузить новые данные
+        </a>
+    </div>
+{% endmacro %}
