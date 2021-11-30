@@ -3,7 +3,7 @@
 """
 from collections import defaultdict
 from dataclasses import asdict
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 import sqlalchemy
 from sqlalchemy import exc
@@ -146,7 +146,10 @@ def dump_days(days: dict[date, dict]) -> None:
 
 def recalc_weeks(start: datetime, stop: datetime) -> None:
     """Пересчитать в базе посуточные данные."""
-    days = get_days(str(start.date()), str(stop.date()))
+    start_week = start - timedelta(days=start.weekday())
+    end_week = stop + timedelta(days=6)
+
+    days = get_days(str(start_week.date()), str(end_week.date()))
     weeks = defaultdict(dict)
 
     for date_, category, minutes in days:
