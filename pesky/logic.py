@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
 """Бизнес логика.
 """
-
-from collections import defaultdict
+import io
 from datetime import datetime, timedelta, date
 
-PAYLOAD = list[tuple[str, str, int]]
+import itertools
+
+from pesky import cast
+from pesky import objects
+from pesky import parse
+
+COLORS = [
+    'red',
+]
+
+COLORS_GEN = itertools.cycle(COLORS)
+COLORS_CACHE = {}
 
 
 def get_start_and_stop(months: int) -> tuple[date, date]:
@@ -17,68 +27,33 @@ def get_start_and_stop(months: int) -> tuple[date, date]:
 
 def get_border_color(category: str) -> str:
     """Выбрать цвет для категории на графике."""
-    # TODO
-    return 'red'
+    color = COLORS_CACHE.get(category)
+
+    if color is None:
+        color = next(COLORS_GEN)
+        COLORS_CACHE[category] = color
+
+    return color
 
 
-def cast_to_chartjs(payload: PAYLOAD) -> dict:
-    """Конвертировать данные в формат ChartJS.
+def analyze_payload(stream: io.BytesIO
+                    ) -> tuple[datetime, datetime, list[objects.Minute]]:
+    """Разложить сырые исходные данные в набор интервалов."""
+    payload_bytes = cast.to_bytes(stream)
+    payload = payload_bytes.decode('utf-8')
+    spans = parse.ATimeLogger(payload).parse()
 
-    На входе:
-    [('01', 'Чесал кота', 120), ('02', 'Чесал кота', 50)]
+    min_m = '2100-01-01 00:00'
+    max_m = '1970-01-01 00:00'
 
-    На выходе:
-    {
-        'labels': ['1', '2'],
-        'datasets': [
-            {
-                'label': 'Чесал кота',
-                'data': [120, 50],
-                'borderColor': 'red'
-            }
-        ]
-    }
-    """
-    raw_labels = set()
-    raw_all_keys = set()
-    by_type = defaultdict(dict)
+    minutes = []
+    for span in spans:
+        sub_minutes = cast.to_minutes(span)
 
-    for key, category, duration in payload:
-        key = key.strip()
-        raw_all_keys.add(key)
-        raw_labels.add(category)
-        by_type[category][key] = duration
+        for sub_minute in sub_minutes:
 
-    labels = sorted(raw_labels)
-    all_keys = sorted(raw_all_keys)
+            min_m = min(min_m, sub_minute.minute)
+            max_m = max(max_m, sub_minute.minute)
+            minutes.append(sub_minute)
 
-    datasets = []
-    for category in labels:
-        data = by_type[category]
-
-        local_dataset = []
-        for key in all_keys:
-            local_dataset.append(data.get(key))
-
-        datasets.append({
-            'label': category,
-            'data': local_dataset,
-            'borderColor': get_border_color(category),
-        })
-
-    return {
-        'labels': all_keys,
-        'datasets': datasets,
-    }
-
-
-def cast_payload(raw_payload: bytes) -> list:
-    # TODO
-    payload = raw_payload.decode('utf-8')
-    print(payload)
-    return []
-
-
-def extract_start_and_stop(minutes: list) -> tuple[date, date]:
-    # TODO
-    return datetime.now().date(), datetime.now().date()
+    return cast.to_datetime(min_m), cast.to_datetime(max_m), minutes

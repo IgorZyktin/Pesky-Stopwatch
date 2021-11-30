@@ -6,7 +6,7 @@ from pesky import app
 
 def main():
     """Запуск приложения."""
-    app.app.run('127.0.0.1', 7900, debug=True)
+    app.app.run('0.0.0.0', 5000, debug=True)
 
 
 if __name__ == '__main__':

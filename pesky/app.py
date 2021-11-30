@@ -4,6 +4,7 @@
 
 import flask
 
+from pesky import cast
 from pesky import database
 from pesky import logic
 
@@ -34,7 +35,7 @@ def chart(start: str, stop: str):
 def api_chart(start: str, stop: str):
     """Ручка для получения данных по графикам."""
     weeks = database.get_weeks(start, stop)
-    payload = logic.cast_to_chartjs(weeks)
+    payload = cast.to_chartjs(weeks)
     return flask.jsonify(payload)
 
 
@@ -44,20 +45,13 @@ def upload():
     if flask.request.method == 'POST':
         if 'file' in flask.request.files:
             file = flask.request.files['file']
-            if file.filename:
-                payload = b''
-                chunk_size = 4096
-                while True:
-                    chunk = file.stream.read(chunk_size)
-                    if len(chunk) == 0:
-                        break
-
-                    payload += chunk
-
-                clean_data = logic.cast_payload(payload)
-                start, stop = logic.extract_start_and_stop(clean_data)
-                database.dump_minutes(clean_data)
+            if file.filename and file.filename.lower().endswith('csv'):
+                # noinspection PyTypeChecker
+                min_m, max_m, minutes = logic.analyze_payload(file.stream)
+                database.dump_minutes(minutes)
+                database.recalc_days(min_m, max_m)
+                database.recalc_weeks(min_m, max_m)
                 return flask.redirect(flask.url_for('chart',
-                                                    start=start, stop=stop))
+                                                    start=min_m, stop=max_m))
 
     return flask.render_template('upload.html')
